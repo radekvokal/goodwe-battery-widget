@@ -8,6 +8,7 @@ Kirigami.FormLayout {
 
     property alias cfg_inverterIp: inverterIpField.text
     property alias cfg_backgroundOpacity: opacitySlider.value
+    property string cfg_viewStyle: "bar"
 
     TextField {
         id: inverterIpField
@@ -47,5 +48,19 @@ Kirigami.FormLayout {
         text: i18n("Current: %1%", opacitySlider.value)
         font.pointSize: 8
         opacity: 0.6
+    }
+
+    Item { height: Kirigami.Units.largeSpacing }
+
+    ComboBox {
+        id: viewStyleCombo
+        Kirigami.FormData.label: i18n("Widget style:")
+        model: [
+            { text: i18n("Classic (progress bar)"), value: "bar" },
+            { text: i18n("Neon battery"), value: "neon" }
+        ]
+        textRole: "text"
+        currentIndex: cfg_viewStyle === "neon" ? 1 : 0
+        onCurrentIndexChanged: cfg_viewStyle = model[currentIndex].value
     }
 }

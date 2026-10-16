@@ -16,12 +16,13 @@ PlasmoidItem {
     property color statusColor: isCharging ? "#4caf50" : "#f44336"
     property color barColor: batteryPercent > 50 ? "#4caf50" : (batteryPercent >= 20 ? "#ffc107" : "#f44336")
     property real bgOpacity: (Plasmoid.configuration.backgroundOpacity !== undefined ? Plasmoid.configuration.backgroundOpacity : 100) / 100
+    property string viewStyle: Plasmoid.configuration.viewStyle || "bar"
 
     preferredRepresentation: fullRepresentation
     Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
 
     readonly property string inverterIp: Plasmoid.configuration.inverterIp || "192.168.0.22"
-    readonly property string cmd: "/usr/bin/python3 /home/rvokal/.local/bin/goodwe-battery-status.py " + inverterIp
+    readonly property string cmd: "goodwe-battery-status " + inverterIp
 
     P5Support.DataSource {
         id: executable
@@ -61,8 +62,8 @@ PlasmoidItem {
     }
 
     fullRepresentation: Rectangle {
-        Layout.preferredWidth: Kirigami.Units.gridUnit * 10
-        Layout.preferredHeight: Kirigami.Units.gridUnit * 5
+        Layout.preferredWidth: root.viewStyle === "neon" ? Kirigami.Units.gridUnit * 12 : Kirigami.Units.gridUnit * 10
+        Layout.preferredHeight: root.viewStyle === "neon" ? Kirigami.Units.gridUnit * 7 : Kirigami.Units.gridUnit * 5
         Layout.minimumWidth: Kirigami.Units.gridUnit * 6
         Layout.minimumHeight: Kirigami.Units.gridUnit * 3
         radius: Kirigami.Units.cornerRadius
@@ -71,67 +72,97 @@ PlasmoidItem {
                        Kirigami.Theme.backgroundColor.b,
                        root.bgOpacity)
 
+        // Classic bar view
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: Kirigami.Units.smallSpacing
             spacing: Kirigami.Units.smallSpacing
+            visible: root.viewStyle === "bar"
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter
-            spacing: Kirigami.Units.smallSpacing
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignHCenter
+                spacing: Kirigami.Units.smallSpacing
 
-            Kirigami.Icon {
-                source: root.isCharging ? "battery-charging" : "battery-080"
-                Layout.preferredWidth: Kirigami.Units.iconSizes.medium
-                Layout.preferredHeight: Kirigami.Units.iconSizes.medium
+                Kirigami.Icon {
+                    source: root.isCharging ? "battery-charging" : "battery-080"
+                    Layout.preferredWidth: Kirigami.Units.iconSizes.medium
+                    Layout.preferredHeight: Kirigami.Units.iconSizes.medium
+                }
+
+                PlasmaComponents.Label {
+                    text: root.hasError ? "?" : root.batteryPercent + "%"
+                    font.pointSize: 22
+                    font.bold: true
+                    color: root.statusColor
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.leftMargin: Kirigami.Units.largeSpacing
+                Layout.rightMargin: Kirigami.Units.largeSpacing
+                Layout.preferredHeight: Kirigami.Units.gridUnit * 0.5
+                radius: height / 2
+                color: Qt.rgba(Kirigami.Theme.textColor.r,
+                               Kirigami.Theme.textColor.g,
+                               Kirigami.Theme.textColor.b, 0.15)
+
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: parent.width * Math.max(0, Math.min(100, root.batteryPercent)) / 100
+                    radius: height / 2
+                    color: root.barColor
+
+                    Behavior on width {
+                        NumberAnimation { duration: 600; easing.type: Easing.InOutQuad }
+                    }
+                    Behavior on color {
+                        ColorAnimation { duration: 400 }
+                    }
+                }
             }
 
             PlasmaComponents.Label {
-                text: root.hasError ? "?" : root.batteryPercent + "%"
-                font.pointSize: 22
+                Layout.alignment: Qt.AlignHCenter
+                text: {
+                    if (root.hasError) return "Connection error"
+                    if (root.isCharging) return "Charging"
+                    return "Discharging"
+                }
+                font.pointSize: 9
+                opacity: 0.7
+            }
+        }
+
+        // Neon battery view
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: Kirigami.Units.smallSpacing
+            spacing: 0
+            visible: root.viewStyle === "neon"
+
+            NeonBattery {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                batteryPercent: root.batteryPercent
+                isCharging: root.isCharging
+            }
+
+            PlasmaComponents.Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: {
+                    if (root.hasError) return "?"
+                    var pct = root.batteryPercent + "%"
+                    if (root.isCharging) return pct + " Charging"
+                    return pct + " Discharging"
+                }
+                font.pointSize: 10
                 font.bold: true
                 color: root.statusColor
             }
-        }
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.leftMargin: Kirigami.Units.largeSpacing
-            Layout.rightMargin: Kirigami.Units.largeSpacing
-            Layout.preferredHeight: Kirigami.Units.gridUnit * 0.5
-            radius: height / 2
-            color: Qt.rgba(Kirigami.Theme.textColor.r,
-                           Kirigami.Theme.textColor.g,
-                           Kirigami.Theme.textColor.b, 0.15)
-
-            Rectangle {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: parent.width * Math.max(0, Math.min(100, root.batteryPercent)) / 100
-                radius: height / 2
-                color: root.barColor
-
-                Behavior on width {
-                    NumberAnimation { duration: 600; easing.type: Easing.InOutQuad }
-                }
-                Behavior on color {
-                    ColorAnimation { duration: 400 }
-                }
-            }
-        }
-
-        PlasmaComponents.Label {
-            Layout.alignment: Qt.AlignHCenter
-            text: {
-                if (root.hasError) return "Connection error"
-                if (root.isCharging) return "Charging"
-                return "Discharging"
-            }
-            font.pointSize: 9
-            opacity: 0.7
-        }
         }
     }
 }

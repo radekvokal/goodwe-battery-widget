@@ -12,5 +12,8 @@
     <entry name="backgroundOpacity" type="Int">
       <default>100</default>
     </entry>
+    <entry name="viewStyle" type="String">
+      <default>bar</default>
+    </entry>
   </group>
 </kcfg>
