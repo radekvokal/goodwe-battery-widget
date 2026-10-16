@@ -14,6 +14,7 @@ PlasmoidItem {
     property string batteryMode: "..."
     property bool hasError: false
     property color statusColor: isCharging ? "#4caf50" : "#f44336"
+    property color barColor: batteryPercent > 50 ? "#4caf50" : (batteryPercent >= 20 ? "#ffc107" : "#f44336")
 
     preferredRepresentation: fullRepresentation
 
@@ -99,7 +100,7 @@ PlasmoidItem {
                 anchors.bottom: parent.bottom
                 width: parent.width * Math.max(0, Math.min(100, root.batteryPercent)) / 100
                 radius: height / 2
-                color: root.statusColor
+                color: root.barColor
 
                 Behavior on width {
                     NumberAnimation { duration: 600; easing.type: Easing.InOutQuad }
