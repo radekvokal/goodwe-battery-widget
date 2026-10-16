@@ -15,11 +15,13 @@ PlasmoidItem {
     property bool hasError: false
     property color statusColor: isCharging ? "#4caf50" : "#f44336"
     property color barColor: batteryPercent > 50 ? "#4caf50" : (batteryPercent >= 20 ? "#ffc107" : "#f44336")
+    property real bgOpacity: (Plasmoid.configuration.backgroundOpacity !== undefined ? Plasmoid.configuration.backgroundOpacity : 100) / 100
 
     preferredRepresentation: fullRepresentation
+    Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
 
     readonly property string inverterIp: Plasmoid.configuration.inverterIp || "192.168.0.22"
-    readonly property string cmd: "goodwe-battery-status " + inverterIp
+    readonly property string cmd: "/usr/bin/python3 /home/rvokal/.local/bin/goodwe-battery-status.py " + inverterIp
 
     P5Support.DataSource {
         id: executable
@@ -58,12 +60,21 @@ PlasmoidItem {
         onTriggered: fetchData()
     }
 
-    fullRepresentation: ColumnLayout {
+    fullRepresentation: Rectangle {
         Layout.preferredWidth: Kirigami.Units.gridUnit * 10
         Layout.preferredHeight: Kirigami.Units.gridUnit * 5
         Layout.minimumWidth: Kirigami.Units.gridUnit * 6
         Layout.minimumHeight: Kirigami.Units.gridUnit * 3
-        spacing: Kirigami.Units.smallSpacing
+        radius: Kirigami.Units.cornerRadius
+        color: Qt.rgba(Kirigami.Theme.backgroundColor.r,
+                       Kirigami.Theme.backgroundColor.g,
+                       Kirigami.Theme.backgroundColor.b,
+                       root.bgOpacity)
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: Kirigami.Units.smallSpacing
+            spacing: Kirigami.Units.smallSpacing
 
         RowLayout {
             Layout.fillWidth: true
@@ -120,6 +131,7 @@ PlasmoidItem {
             }
             font.pointSize: 9
             opacity: 0.7
+        }
         }
     }
 }

@@ -7,6 +7,7 @@ Kirigami.FormLayout {
     id: configRoot
 
     property alias cfg_inverterIp: inverterIpField.text
+    property alias cfg_backgroundOpacity: opacitySlider.value
 
     TextField {
         id: inverterIpField
@@ -21,5 +22,30 @@ Kirigami.FormLayout {
         opacity: 0.6
         Layout.fillWidth: true
         wrapMode: Text.WordWrap
+    }
+
+    Item { height: Kirigami.Units.largeSpacing }
+
+    RowLayout {
+        Kirigami.FormData.label: i18n("Background opacity:")
+        spacing: Kirigami.Units.smallSpacing
+
+        Label { text: i18n("Transparent") }
+
+        Slider {
+            id: opacitySlider
+            from: 0
+            to: 100
+            stepSize: 5
+            Layout.fillWidth: true
+        }
+
+        Label { text: i18n("Opaque") }
+    }
+
+    Label {
+        text: i18n("Current: %1%", opacitySlider.value)
+        font.pointSize: 8
+        opacity: 0.6
     }
 }
