@@ -1,0 +1,17 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "rvokal"
+            }
+        ],
+        "Name": "GoodWe Battery",
+        "Id": "org.goodwe.battery",
+        "Description": "Shows GoodWe solar battery charge and status",
+        "Category": "Utilities",
+        "Icon": "battery-100",
+        "EnabledByDefault": true,
+        "License": "GPL-3.0+"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
